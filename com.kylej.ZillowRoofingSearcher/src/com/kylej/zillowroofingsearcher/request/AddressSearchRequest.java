@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -54,7 +55,7 @@ public class AddressSearchRequest {
 		execute();
 	}
 
-	public JSONObject execute() {
+	public void execute() {
 		HttpsURLConnection con = null;
 		try {
 			URL url = new URL(requestUrl);
@@ -67,17 +68,9 @@ public class AddressSearchRequest {
 			response = client.execute(request);
 			HttpEntity entity = response.getEntity();
 			InputStream inputStream = entity.getContent();
-			// String result = convertStreamToString(inputStream);
-			// JSONArray results = new JSONArray(result);
-
-			// DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			// DocumentBuilder db = dbf.newDocumentBuilder();
-
-			// Document dom = db.parse(inputStream);
 
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			// InputSource is = new InputSource(new StringReader(result));
 			Document dom = builder.parse(inputStream);
 
 			// get the root element
@@ -91,13 +84,10 @@ public class AddressSearchRequest {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
 	}
 
 	private void readHomeDetails(String homeDetailsUrl) {
@@ -114,7 +104,15 @@ public class AddressSearchRequest {
 			response = client.execute(request);
 			HttpEntity entity = response.getEntity();
 			InputStream inputStream = entity.getContent();
-		} catch (MalformedURLException e) {
+
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document dom = builder.parse(inputStream);
+
+			// get the root element
+			Element docEle = dom.getDocumentElement();
+			NodeList list = dom.getElementsByTagName("homedetails");
+		} catch (IOException | ParserConfigurationException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
