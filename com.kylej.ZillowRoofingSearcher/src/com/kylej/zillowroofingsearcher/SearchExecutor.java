@@ -1,7 +1,10 @@
 package com.kylej.zillowroofingsearcher;
 
+import com.kylej.zillowroofingsearcher.request.AddressSearchRequest;
+
 public class SearchExecutor {
 
-	private final String API_URL = "https://www.zillow.com/webservice/GetSearchResults.htm";
-	public final String ZILLOW_API_ID = "X1-ZWz1gpib38gop7_1sm5d";
+	public static void main(String[] args) {
+		AddressSearchRequest myHouse = new AddressSearchRequest("1303 Dylan Heath Ct", 27608);
+	}
 }

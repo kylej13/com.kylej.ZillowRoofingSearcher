@@ -4,12 +4,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,6 +23,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.kylej.zillowroofingsearcher.utils.Utils;
 
@@ -47,8 +56,6 @@ public class AddressSearchRequest {
 
 	public JSONObject execute() {
 		HttpsURLConnection con = null;
-		String jsonString;
-		JSONObject myResponse = null;
 		try {
 			URL url = new URL(requestUrl);
 			con = (HttpsURLConnection) url.openConnection();
@@ -60,19 +67,57 @@ public class AddressSearchRequest {
 			response = client.execute(request);
 			HttpEntity entity = response.getEntity();
 			InputStream inputStream = entity.getContent();
-			String result = convertStreamToString(inputStream);
+			// String result = convertStreamToString(inputStream);
 			// JSONArray results = new JSONArray(result);
-			JSONObject results = new JSONObject(result);
 
+			// DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			// DocumentBuilder db = dbf.newDocumentBuilder();
+
+			// Document dom = db.parse(inputStream);
+
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			// InputSource is = new InputSource(new StringReader(result));
+			Document dom = builder.parse(inputStream);
+
+			// get the root element
+			Element docEle = dom.getDocumentElement();
+			NodeList list = dom.getElementsByTagName("homedetails");
+			String homeDetailsUrl = list.item(0).getTextContent();
+			readHomeDetails(homeDetailsUrl);
 		} catch (MalformedURLException e) {
 			System.out.println("URL not found");
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private void readHomeDetails(String homeDetailsUrl) {
+		HttpsURLConnection con = null;
+		URL url;
+		try {
+			url = new URL(homeDetailsUrl);
+			con = (HttpsURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			HttpGet request = new HttpGet(homeDetailsUrl);
+			HttpResponse response;
+			HttpClient client = HttpClientBuilder.create().build();
+
+			response = client.execute(request);
+			HttpEntity entity = response.getEntity();
+			InputStream inputStream = entity.getContent();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private static String convertStreamToString(InputStream is) {
